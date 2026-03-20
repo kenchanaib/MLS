@@ -246,6 +246,21 @@
     });
   }
 });
+
+AFRAME.registerComponent('no-cull', {
+  init() {
+    this.el.addEventListener('model-loaded', () => {
+      const obj = this.el.getObject3D('mesh');
+      if (obj) {
+        obj.traverse(node => {
+          if (node.isMesh) {
+            node.frustumCulled = false;
+          }
+        });
+      }
+    });
+  }
+});
         </script>
 </head>
 
@@ -270,8 +285,8 @@
     <div id="container">
     </div>
     <img id="game-title" src="title.png" alt="Game Title">
-    <a-scene mindar-image="imageTargetSrc: a.mind; uiScanning:no;filterMinCF:0.0001;filterBeta:10000;"
-        color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights;logarithmicDepthBuffer:true"
+    <a-scene mindar-image="imageTargetSrc: a.mind; uiScanning:no;"
+        color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights;"
         vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
         <a-assets>
             <a-asset-item id="tree" src="./models/Brick_Animation_3.gltf"></a-asset-item>
@@ -280,16 +295,18 @@
         <a-camera id="myCam" position="0 0 -4" look-controls="enabled: false"></a-camera>
 
         <a-entity id="marker" mindar-image-target="targetIndex: 2" rotation="0 0 0">
-            <a-gltf-model id="block" visible="true" position="10 0 0" scale="2 2 2" material="side: double; transparent: true; depthWrite: false" gltf-model="#tree" animation-mixer disable-culling></a-gltf-model>
-            <a-gltf-model id="block" visible="true" position="-10 0 0" scale="2 2 2" material="side: double; transparent: true; depthWrite: false" gltf-model="#tree" animation-mixer disable-culling></a-gltf-model>
 
-            <a-gltf-model id="block" visible="true" position="15 0 -15" scale="3 3 3" material="side: double; transparent: true; depthWrite: false" gltf-model="#tree" animation-mixer disable-culling></a-gltf-model>
-            <a-gltf-model id="block" visible="true" position="-15 0 15" scale="3 3 3" material="side: double; transparent: true; depthWrite: false" gltf-model="#tree" animation-mixer disable-culling></a-gltf-model>
-
-            <a-gltf-model id="block" visible="true" position="0 0 10" scale="2 2 2" material="side: double; transparent: true; depthWrite: false" gltf-model="#tree" animation-mixer disable-culling></a-gltf-model>
-            <a-gltf-model id="block" visible="true" position="0 0 -10" scale="3 3 3" material="side: double; transparent: true; depthWrite: false" gltf-model="#tree" animation-mixer disable-culling></a-gltf-model>
         </a-entity>
 
+        <a-entity id="block" visible="false">
+            <a-gltf-model visible="true" position="50 0 -250" scale="60 60 60" material="side: double; transparent: true; depthWrite: false" gltf-model="#tree" animation-mixer disable-culling></a-gltf-model>
+
+            <a-gltf-model visible="true" position="-200 0 100" scale="50 50 50" material="side: double; transparent: true; depthWrite: false" gltf-model="#tree" animation-mixer="timeScale:1" disable-culling no-cull></a-gltf-model>
+            <a-gltf-model visible="true" position="-300 0 -150" scale="50 50 50"  rotation="0 90 0" material="side: double; transparent: true; depthWrite: false" gltf-model="#tree" animation-mixer disable-culling></a-gltf-model>
+
+            <a-gltf-model visible="true" position="200 0 -100" scale="50 50 50" material="side: double; transparent: true; depthWrite: false" gltf-model="#tree" animation-mixer="timeScale:1" disable-culling no-cull></a-gltf-model>
+            <a-gltf-model visible="true" position="300 0 150" scale="50 50 50"  rotation="0 90 0" material="side: double; transparent: true; depthWrite: false" gltf-model="#tree" animation-mixer disable-culling></a-gltf-model>
+    </a-entity>
 
     </a-scene>
     <canvas id="captureCanvas" style="display:none;"></canvas>
