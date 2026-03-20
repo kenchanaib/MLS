@@ -1,0 +1,469 @@
+<html>
+
+<head>
+  <meta property="og:site_name" content="Hung Shui Kiu / Ha Tsuen New Development Area">
+  <meta property="og:title" content="Hung Shui Kiu / Ha Tsuen New Development Area">
+  <meta property="og:description" content="Hung Shui Kiu / Ha Tsuen New Development Area - AR Game">
+  <meta property="og:type" content="website">
+  <meta property="og:image:alt" content="AR Game">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="icon.svg" type="image/jpeg" sizes="48x48">
+  <title>Hung Shui Kiu / Ha Tsuen New Development Area - AR Game</title>
+  <!-- <script src='js/aframe-transparent-video-shader.js'></script> -->
+  <script src="js/aframe.min.js"></script>
+  <script src="js/mindar-image-aframe.prod.js"></script>
+  <style>
+    /* Ensure the scene takes up the full viewport */
+    body {
+      margin: 0;
+      overflow: hidden;
+      background-color: black;
+    }
+
+    .arjs-loader {
+      height: 100%;
+      width: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      background-color: rgba(0, 0, 0, 0.8);
+      z-index: 9999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .arjs-loader div {
+      text-align: center;
+      font-size: 1.25em;
+      color: white;
+    }
+
+    #center-container {
+      position: absolute;
+      display: block;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-image: src("");
+      background-color: rgba(117 208 238);
+      z-index: 5;
+    }
+
+    #myButton {
+      position: fixed;
+      bottom: 28%;
+      left: 50%;
+      width: 160px;
+      height: 150px;
+      transform: translateX(-50%);
+      /* Center horizontally */
+      background: transparent;
+      border: none;
+      cursor: pointer;
+    }
+
+    #landingPage {
+      position: fixed;
+      /* bottom: -7%; */
+      left: 0;
+      width: 100vw !important;
+      height: 100vh !important;
+      object-fit: cover !important;
+      transform: none !important;
+      display: block;
+      /* Hidden initially */
+    }
+
+    #startBtn {
+      width: 100%;
+      /* height: 100%; */
+      vertical-align: middle;
+    }
+
+    .loading-dots {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .loading-dots div {
+      width: 10px;
+      height: 10px;
+      margin: 0 4px;
+      background-color: #3498db;
+      border-radius: 50%;
+      animation: bounce 1.4s infinite ease-in-out both;
+    }
+
+    .loading-dots div:nth-child(1) {
+      animation-delay: -0.32s;
+    }
+
+    .loading-dots div:nth-child(2) {
+      animation-delay: -0.16s;
+    }
+
+    .loading-dots div:nth-child(3) {
+      animation-delay: 0s;
+    }
+
+    @keyframes bounce {
+
+      0%,
+      80%,
+      100% {
+        transform: scale(0);
+      }
+
+      40% {
+        transform: scale(1);
+      }
+    }
+
+    #captureBtn {
+      display: none;
+      position: fixed;
+      bottom: 8%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      /* ← adjust size to match your photo.png */
+      height: 80px;
+      /* make it square or match image aspect */
+      background: transparent;
+      /* no background needed for image button */
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      z-index: 1000;
+      /* optional: slight shadow or glow for better visibility */
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
+    }
+
+    #captureBtn:active {
+      transform: translateX(-50%) scale(0.92);
+      /* subtle press effect */
+      opacity: 0.85;
+    }
+
+    #fullscreen-video {
+      position: fixed;
+      bottom: 0px;
+      left: 50%;
+      /* width: 100vw !important; */
+      height: 100vh !important;
+      object-fit: cover !important;
+      transform: translate(-50%, 0%) !important;
+      z-index: 10;
+      display: block;
+      opacity: 0;
+      z-index: -1;
+      transition: opacity 0.5s ease;
+    }
+
+    #game-title {
+      position: fixed;
+      top: 5%;
+      left: 50%;
+      transform: translateX(-50%);
+      /* Center horizontally */
+      width: 320px;
+      /* Fit 75% of screen width */
+      height: auto;
+      /* Maintain aspect ratio */
+      z-index: 5;
+      /* Below video but above AR content */
+      opacity: 0;
+      /* Initially invisible for fade-in */
+      transition: opacity 0.5s ease;
+      /* Smooth fade animation */
+    }
+
+    #home_title {
+      position: fixed;
+      top: 40%;
+      left: 50%;
+      width: 85vw;
+      /* height: 150px; */
+      transform: translate(-50%, -100%);
+      /* Center horizontally */
+      background: transparent;
+      border: none;
+      cursor: pointer;
+    }
+
+    button {
+      outline: none;
+      /* Remove focus outline */
+      -webkit-tap-highlight-color: transparent;
+      /* Remove iOS tap highlight */
+      -webkit-appearance: none;
+      /* Remove default button styling */
+      -moz-appearance: none;
+      /* For cross-browser consistency */
+      appearance: none;
+      /* Standard property */
+      border: none;
+      /* Remove default border */
+      background: #007bff;
+      /* Example background */
+      color: white;
+      /* Example text color */
+      padding: 10px 20px;
+      cursor: pointer;
+      /* Maintain pointer cursor */
+      touch-action: manipulation;
+      /* Optimize touch behavior */
+    }
+
+    /* Ensure no effect on active or focus states */
+    button:focus,
+    button:active {
+      outline: none;
+      box-shadow: none;
+      /* Remove any shadow */
+      background: #007bff;
+      /* Keep consistent background */
+      border: none;
+      /* Keep consistent border */
+    }
+
+    #whiteScreen {
+      background-color: black;
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 10;
+      transition: opacity 0.1s ease;
+      opacity: 0;
+      display: none;
+    }
+  </style>
+</head>
+
+<body style='margin : 0px; overflow: hidden;'>
+  <div id="loader" class="arjs-loader">
+    <div class="loading-dots">
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>
+  </div>
+  <div id="center-container">
+    <img id="landingPage" src="bg.jpg">
+    <img id="home_title" src="home_title.png">
+    <button id="myButton" onclick="myFunction()">
+      <img id="startBtn" src="Home.png" alt="">
+    </button>
+  </div>
+  <button id="captureBtn">
+    <img src="photo.png" alt="" style="width:100%; height:100%; object-fit: contain;">
+  </button>
+  <div id="container">
+  </div>
+  <video id="fullscreen-video" autoplay preload muted playsinline>
+    <!-- <source src="Banana.webm" type="video/webm">   -->
+    <source src="Bridge.mov" type='video/mp4; codecs="hvc1"'>
+    <source src="Bridge.webm" type="video/webm">
+    Your browser does not support the video tag.
+  </video>
+  <img id="game-title" src="title.png" alt="Game Title">
+  <a-scene mindar-image="imageTargetSrc: a.mind; uiScanning:no;" color-space="sRGB"
+    renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false">
+
+    <a-camera id="myCam" position="0 0 0" look-controls="enabled: false"></a-camera>
+
+    <a-entity id="marker" mindar-image-target="targetIndex: 3" rotation="0 0 0">
+    </a-entity>
+  </a-scene>
+
+  <canvas id="captureCanvas" style="display:none;"></canvas>
+  <div id="whiteScreen"></div>
+  <script>
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+
+    document.querySelector('a-scene').addEventListener("arReady", (event) => {
+      console.log("A-Frame MindAR ready - camera initialized");
+      document.getElementById('loader').style.display = "none";
+
+      if (/android/i.test(userAgent)) {
+        // document.querySelector('a-video').setAttribute("material", "shader: standard");
+      }
+    });
+
+    const video = document.querySelector('#fullscreen-video');
+    const marker = document.querySelector('#marker');
+    const camera2 = document.querySelector("#myCam");
+    const captureBtn = document.getElementById('captureBtn');
+    const title = document.querySelector('#game-title');
+
+    let isTrigger = false;
+    let isPlaying = false;
+
+    function myFunction() {
+      document.getElementById('center-container').style.display = "none";
+      document.querySelector('#fullscreen-video').play();
+      isStartGame = true;
+      title.style.opacity = '1';
+
+      document.querySelector('#fullscreen-video').pause();
+      document.querySelector('#fullscreen-video').currentTime = 0;
+
+    }
+
+    marker.addEventListener("targetFound", event => {
+      if (isTrigger === false && isPlaying === false && window.isStartGame) {
+        console.log("Marker found");
+        isTrigger = true;
+        isPlaying = true;
+        video.loop = true;
+        video.currentTime = 0;
+        video.play();
+        video.style.display = 'block';
+        video.style.opacity = 1;
+        title.style.opacity = '0';
+        setTimeout(() => {
+          camera2.setAttribute("look-controls", "enabled: true");
+          captureBtn.style.display = "block";
+        }, 100);
+      }
+    });
+    // ── Composite capture (camera feed + AR overlay) ───────────────
+    captureBtn.addEventListener('click', () => {
+      const scene = document.querySelector('a-scene');
+      const captureCanvas = document.getElementById('captureCanvas');
+      const ctx = captureCanvas.getContext('2d');
+      const fullscreenVideo = document.querySelector('#fullscreen-video'); // 你原有的特殊 video
+
+      if (!scene) {
+        console.warn("Missing a-scene for capture");
+        return;
+      }
+
+      // 找出 webcam video（背景真實相機）
+      let webcamVideo = null;
+      document.querySelectorAll('video').forEach(v => {
+        if (v.srcObject instanceof MediaStream) {
+          webcamVideo = v;
+        }
+      });
+
+      // ── 核心：計算高解析度輸出尺寸 ──
+      const dpr = (window.devicePixelRatio / 2) || 2; // 安全 fallback 到 2
+      const scaleFactor = 2.5; // ← 可調：2 = 清晰、2.5=平衡、3=超清晰（但較慢/較大檔案）
+
+      // 以螢幕顯示的 CSS 大小為基準（clientWidth/clientHeight）
+      const baseWidth = scene.clientWidth;
+      const baseHeight = scene.clientHeight;
+
+      const OUTPUT_WIDTH = Math.floor(baseWidth * dpr * scaleFactor);
+      const OUTPUT_HEIGHT = Math.floor(baseHeight * dpr * scaleFactor);
+
+      // 設定 canvas 為高解析度
+      captureCanvas.width = OUTPUT_WIDTH;
+      captureCanvas.height = OUTPUT_HEIGHT;
+
+      // Flash 反饋（時間稍長一點，讓人感覺有動作）
+      const whiteFlash = document.querySelector('#whiteScreen');
+      whiteFlash.style.opacity = 0.7;
+      whiteFlash.style.display = 'block';
+      setTimeout(() => {
+        whiteFlash.style.opacity = 0;
+        whiteFlash.style.display = 'none';
+      }, 50);
+
+      setTimeout(() => {
+        // 清空畫布（黑色底）
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, OUTPUT_WIDTH, OUTPUT_HEIGHT);
+
+        // Helper: draw with "cover" behavior (無變形、填滿畫面)
+        function drawCover(imgOrVideo, x, y, w, h) {
+          if (!imgOrVideo) return;
+
+          const sourceWidth = imgOrVideo.videoWidth || imgOrVideo.width || 0;
+          const sourceHeight = imgOrVideo.videoHeight || imgOrVideo.height || 0;
+          if (sourceWidth === 0 || sourceHeight === 0) return;
+
+          const sourceRatio = sourceWidth / sourceHeight;
+          const targetRatio = w / h;
+
+          let drawWidth = w;
+          let drawHeight = h;
+          let offsetX = x;
+          let offsetY = y;
+
+          if (sourceRatio > targetRatio) {
+            // 來源較寬 → 裁左右
+            drawWidth = h * sourceRatio;
+            offsetX = x + (w - drawWidth) / 2;
+          } else {
+            // 來源較高 → 裁上下
+            drawHeight = w / sourceRatio;
+            offsetY = y + (h - drawHeight) / 2;
+          }
+
+          ctx.drawImage(imgOrVideo, offsetX, offsetY, drawWidth, drawHeight);
+        }
+
+        // 1. 畫 webcam（真實世界背景） – cover 全畫面
+        if (webcamVideo && webcamVideo.videoWidth > 0) {
+          drawCover(webcamVideo, 0, 0, OUTPUT_WIDTH, OUTPUT_HEIGHT);
+        }
+
+        // 2. 如果有 fullscreen-video 且正在顯示，畫它（你原有的邏輯）
+        if (fullscreenVideo &&
+          fullscreenVideo.style.display === 'block' &&
+          fullscreenVideo.videoWidth > 0 &&
+          fullscreenVideo.currentTime > 0.03) {
+          // 你原來的位置與大小，但現在是相對於高解析 canvas 的比例
+          // 原： OUTPUT_HEIGHT - 470, 400×640 → 需按比例放大
+          const videoBaseHeight = baseHeight;
+          const videoBaseWidth = 400;
+          const videoBaseY = baseHeight - videoBaseHeight; // 原相對位置
+
+          const scaledVideoW = Math.floor(videoBaseWidth * dpr * scaleFactor);
+          const scaledVideoH = Math.floor(videoBaseHeight * dpr * scaleFactor);
+          const scaledVideoY = Math.floor(videoBaseY * dpr * scaleFactor);
+
+          // 可選：降低透明度讓 AR 更突出（取消註解即可）
+          // ctx.globalAlpha = 0.7;
+          drawCover(fullscreenVideo,
+            (OUTPUT_WIDTH - scaledVideoW) / 2, // 置中
+            scaledVideoY + (OUTPUT_HEIGHT * 0.055),
+            scaledVideoW,
+            scaledVideoH);
+          // ctx.globalAlpha = 1.0;
+        }
+
+        // 3. 最後畫 A-Frame 的 3D 渲染（screenshot component 會自動 upscale 到大 canvas）
+        const glCanvas = scene.components.screenshot ?.getCanvas('perspective');
+        if (glCanvas) {
+          ctx.drawImage(glCanvas, 0, 0, OUTPUT_WIDTH, OUTPUT_HEIGHT);
+        } else {
+          console.warn("A-Frame screenshot canvas not available");
+        }
+
+        // 產生並下載
+        const dataURL = captureCanvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.download = `hsk-ar-capture-${Date.now()}.png`;
+        link.href = dataURL;
+        link.click();
+
+      }, 200); // 延遲稍增加，確保高解析合成時 frame 準備好
+    });
+  </script>
+</body>
+
+</html>

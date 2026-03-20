@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>A-Frame Particle System Component Example</title>
+    <meta name="description" content="Hello, World!">
+    <script src="js/aframe.min.js"></script>
+    <!-- <script src="js/aframe-particle-system-component.min.js"></script> -->
+    <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/aframe-extras.min.js"></script>
+  </head>
+  <body>
+  <script>
+AFRAME.registerComponent('disable-culling', {
+  init: function () {
+    this.el.addEventListener('model-loaded', (e) => {
+      const model = e.detail.model;
+      model.traverse((node) => {
+        if (node.isMesh) {
+          node.frustumCulled = false;
+        }
+      });
+    });
+  }
+});
+    </script>
+<a-scene>
+      <!-- <a-entity position="0 35 -15" particle-system="preset: snow; maxAge: 5;opacity:1,0;texture: ./images/flower.PNG; particleCount: 500; sizeSpread: 30,50;dragRandomise: true; randomise:true; rotationAngleSpread:0;"></a-entity>
+      <a-entity position="0 35 -15" particle-system="preset: snow; maxAge: 5;opacity:1,0;texture: ./images/1.PNG; particleCount: 500; sizeSpread: 30,50;dragRandomise: true; randomise:true; rotationAngleSpread:0;"></a-entity>
+      <a-entity position="0 35 -15" particle-system="preset: snow; maxAge: 5;opacity:1,0;texture: ./images/2.PNG; particleCount: 500; sizeSpread: 30,50;dragRandomise: true; randomise:true; rotationAngleSpread:0;"></a-entity>
+      <a-entity position="0 35 -15" particle-system="preset: snow; maxAge: 5;opacity:1,0;texture: ./images/3.PNG; particleCount: 500; sizeSpread: 30,50;dragRandomise: true; randomise:true; rotationAngleSpread:0;"></a-entity> -->
+
+    <a-assets>
+    <a-asset-item id="tree" src="./creature/Crab_01.gltf"></a-asset-item>
+  </a-assets>
+
+      <a-entity scale="20 20 20" position ="0 0 0" rotation='0 90 0' gltf-model="#tree" material="side: double; transparent: true; depthWrite: false" animation-mixer disable-culling></a-entity>
+      <a-sky color="#000000"></a-sky>
+
+    </a-scene>
+  </body>
+</html>
