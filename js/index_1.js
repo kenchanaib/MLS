@@ -236,55 +236,59 @@ document.addEventListener('DOMContentLoaded', () => {
     window.showCapturePreview = function(dataURL) {
         document.querySelectorAll('.capture-preview-container').forEach(el => el.remove());
 
-        const container = document.createElement('div');
-        container.className = 'capture-preview-container';
+        fetch(dataURL)
+        .then(res => res.blob())
+        .then(blob => {
+            const blobUrl = URL.createObjectURL(blob);
 
-        const frame = document.createElement('div');
-        frame.className = 'capture-frame';
+            const container = document.createElement('div');
+            container.className = 'capture-preview-container';
 
-        const img = document.createElement('img');
-        img.src = dataURL;
-        img.alt = 'Captured MLS AR Image';
-        img.className = 'capture-img';
+            const img = document.createElement('img');
+            img.src = blobUrl;
+            img.alt = 'Captured MLS AR Image';
+            img.className = 'capture-img';
 
-        // Critical fixes for Android "Save Image"
-        img.style.cssText = `
-            max-width: 94%;
-            max-height: 78%;
-            border: 12px solid #ffffff;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.7);
-            display: block;
-            pointer-events: auto;
-            touch-action: auto;
-            user-select: none;
-            -webkit-user-select: none;
-        `;
+            const message = document.createElement('div');
+            message.textContent = '長按圖片儲存';
+            message.className = 'capture-message';
 
-        const message = document.createElement('div');
-        message.textContent = '請長按相片以作儲存';
-        message.className = 'capture-message';
+            const closeBtn = document.createElement('div');
+            closeBtn.innerHTML = '&times;';
+            closeBtn.className = 'capture-close-btn';
 
-        const closeBtn = document.createElement('div');
-        closeBtn.innerHTML = '&times;';
-        closeBtn.className = 'capture-close-btn';
+            container.appendChild(img);
+            container.appendChild(message);
+            container.appendChild(closeBtn);
+            document.body.appendChild(container);
 
-        frame.appendChild(img);
-        container.appendChild(frame);
-        container.appendChild(message);
-        container.appendChild(closeBtn);
-        document.body.appendChild(container);
+            // Close handlers
+            closeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                cleanup();
+            });
 
-        closeBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            container.remove();
+            container.addEventListener('click', (e) => {
+                if (e.target === container || e.target === message) {
+                    cleanup();
+                }
+            });
+
+            // Cleanup function to revoke blob URL
+            function cleanup() {
+                container.remove();
+                setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+            }
+
+            // Auto close
+            setTimeout(() => {
+                if (container.parentNode) cleanup();
+            }, 30000);
+
+        })
+        .catch(err => {
+            console.error("Blob conversion failed:", err);
+            alert("無法顯示預覽，請重試");
         });
-
-        container.addEventListener('click', (e) => {
-            if (e.target === container) container.remove();
-        });
-
-        setTimeout(() => {
-            if (container.parentNode) container.remove();
-        }, 25000);
     };
 });
