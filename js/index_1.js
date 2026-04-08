@@ -233,45 +233,88 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Capture Preview
-    window.showCapturePreview = function(dataURL) {
-        document.querySelectorAll('.capture-preview-container').forEach(el => el.remove());
+window.showCapturePreview = function(dataURL) {
+    // Remove any existing previews
+    document.querySelectorAll('.capture-preview-container').forEach(el => el.remove());
 
-        const container = document.createElement('div');
-        container.className = 'capture-preview-container';
+    const container = document.createElement('div');
+    container.className = 'capture-preview-container';
+    container.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.85); display: flex; align-items: center;
+        justify-content: center; z-index: 9999; touch-action: none;
+    `;
 
-        const frame = document.createElement('div');
-        frame.className = 'capture-frame';
+    const frame = document.createElement('div');
+    frame.className = 'capture-frame';
+    frame.style.cssText = `
+        position: relative; max-width: 95%; max-height: 90%;
+        box-shadow: 0 0 30px rgba(0,0,0,0.5); border-radius: 12px;
+        overflow: hidden; background: #000;
+    `;
 
-        const img = document.createElement('img');
-        img.src = dataURL;
-        img.alt = 'Captured HSK AR Image';
-        img.className = 'capture-img';
+    const img = document.createElement('img');
+    img.src = dataURL;
+    img.alt = 'Captured HSK AR Image';
+    img.className = 'capture-img';
+    img.style.cssText = `
+        display: block; width: 100%; height: auto;
+        max-height: 85vh; object-fit: contain;
+        -webkit-touch-callout: default;   /* Important for mobile */
+        -webkit-user-select: auto;
+        user-select: auto;
+        pointer-events: auto;
+    `;
 
-        const message = document.createElement('div');
-        message.textContent = 'Long press the image and tap "Save to Photos"';
-        message.className = 'capture-message';
+    // Make image directly savable
+    img.setAttribute('draggable', 'true');
 
-        const closeBtn = document.createElement('div');
-        closeBtn.innerHTML = '&times;';
-        closeBtn.className = 'capture-close-btn';
+    const message = document.createElement('div');
+    message.textContent = '請長按相片以作儲存 (Long press to save)';
+    message.className = 'capture-message';
+    message.style.cssText = `
+        position: absolute; bottom: -50px; left: 50%; transform: translateX(-50%);
+        color: #fff; background: rgba(0,0,0,0.7); padding: 8px 16px;
+        border-radius: 20px; font-size: 15px; white-space: nowrap;
+        z-index: 10;
+    `;
 
-        frame.appendChild(img);
-        container.appendChild(frame);
-        container.appendChild(message);
-        container.appendChild(closeBtn);
-        document.body.appendChild(container);
+    const closeBtn = document.createElement('div');
+    closeBtn.innerHTML = '&times;';
+    closeBtn.className = 'capture-close-btn';
+    closeBtn.style.cssText = `
+        position: absolute; top: -15px; right: -15px; width: 36px; height: 36px;
+        background: #fff; color: #000; border-radius: 50%; display: flex;
+        align-items: center; justify-content: center; font-size: 24px;
+        font-weight: bold; z-index: 11; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    `;
 
-        closeBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            container.remove();
-        });
+    frame.appendChild(img);
+    container.appendChild(frame);
+    container.appendChild(message);
+    container.appendChild(closeBtn);
+    document.body.appendChild(container);
 
-        container.addEventListener('click', (e) => {
-            if (e.target === container) container.remove();
-        });
+    // Close handlers
+    closeBtn.addEventListener('click', (e) => {
+        e.stopImmediatePropagation();
+        container.remove();
+    });
 
-        setTimeout(() => {
-            if (container.parentNode) container.remove();
-        }, 25000);
-    };
+    // Only close if tapping background (outside frame)
+    container.addEventListener('click', (e) => {
+        if (e.target === container) container.remove();
+    });
+
+    // Critical: Allow context menu on the image
+    img.addEventListener('contextmenu', (e) => {
+        // Do NOT call e.preventDefault() here
+        console.log('Context menu (long press) triggered on image');
+    }, { passive: true });
+
+    // Auto-remove after some time
+    setTimeout(() => {
+        if (container.parentNode) container.remove();
+    }, 30000);
+};
 });
