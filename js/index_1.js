@@ -244,6 +244,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const container = document.createElement('div');
             container.className = 'capture-preview-container';
 
+            const frame = document.createElement('div');
+            frame.className = 'capture-frame';
+
             const img = document.createElement('img');
             img.src = blobUrl;
             img.alt = 'Captured MLS AR Image';
@@ -257,7 +260,8 @@ document.addEventListener('DOMContentLoaded', () => {
             closeBtn.innerHTML = '&times;';
             closeBtn.className = 'capture-close-btn';
 
-            container.appendChild(img);
+            frame.appendChild(img);
+            container.appendChild(frame);
             container.appendChild(message);
             container.appendChild(closeBtn);
             document.body.appendChild(container);
