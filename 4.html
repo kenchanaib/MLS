@@ -15,6 +15,7 @@
     <script src="js/aframe.min.js"></script>
     <script src="js/mindar-image-aframe.prod.js"></script>
     <script src="js/aframe-extras.min.js"></script>
+    <script src="js/index_1.js"></script>
     <style>
         /* Ensure the scene takes up the full viewport */
         body {
@@ -220,6 +221,75 @@
             /* Keep consistent border */
         }
 
+        /* === NEW STYLES FOR CAPTURE PREVIEW === */
+        .capture-preview-container {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+
+        .capture-frame {
+            padding: 14px;
+            background: #ffffff;
+            border-radius: 14px;
+            box-shadow: 0 12px 45px rgba(0, 0, 0, 0.75);
+            max-width: 92vw;
+            max-height: 65vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .capture-img {
+            width: auto;
+            height: auto;
+            max-width: 90vw;
+            max-height: 60vh;
+            object-fit: contain;
+            display: block;
+            border-radius: 6px;
+        }
+
+        .capture-message {
+            margin-top: 18px;
+            text-align: center;
+            font-size: 15px;
+            color: #eeeeee;
+            padding: 0 10px;
+        }
+
+        .capture-close-btn {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            width: 38px;
+            height: 38px;
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 300;
+            z-index: 10000;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .capture-close-btn:active {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
         #whiteScreen {
             background-color: black;
             width: 100%;
@@ -231,6 +301,29 @@
             transition: opacity 0.1s ease;
             opacity: 0;
             display: none;
+        }
+        #switchCameraBtn {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            width: 50px;
+            height: 50px;
+            background: rgba(0, 0, 0, 0);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 24px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            cursor: pointer;
+            /* box-shadow: 0 2px 8px rgba(0,0,0,0.3); */
+            transition: all 0.2s ease;
+        }
+        #switchCameraBtn:active {
+            transform: scale(0.9);
+            background: rgba(0, 0, 0, 0.8);
         }
     </style>
 </head>
@@ -246,27 +339,34 @@
     <div id="center-container">
         <img id="landingPage" src="bg.jpg">
         <img id="home_title" src="home_title.png">
-        <button id="myButton" onclick="myFunction()">
+        <button id="myButton">
             <img id="startBtn" src="Home.png" alt="">
         </button>
     </div>
     <button id="captureBtn">
         <img src="photo.png" alt="Capture Photo" style="width:100%; height:100%; object-fit: contain;">
     </button>
+    <button id="switchCameraBtn" title="Switch Camera">
+        <img src="switch.png" alt="Switch Camera" style="width: 50px; height: 50px; object-fit: contain;">
+    </button>
     <div id="container">
     </div>
 
     <img id="game-title" src="title.png" alt="Game Title">
-    <a-scene mindar-image="imageTargetSrc: a.mind; uiScanning:no;filterMinCF:0.0001;filterBeta:10000;"
+    <a-scene id="arScene" mindar-image="imageTargetSrc: a.mind; uiScanning:no;filterMinCF:0.0001;filterBeta:10000;"
         color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights;logarithmicDepthBuffer:true"
         vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
         <a-assets>
             <a-asset-item id="tree" src="./FlowerFalling/Flowerfall06.gltf"></a-asset-item>
         </a-assets>
 
-        <a-camera id="myCam" position="0 0 -4" look-controls="enabled: false; touchEnabled: false; mouseEnabled: false"></a-camera>
+        <a-camera id="myCam" position="0 0 -4" look-controls="enabled: false; touchEnabled: false; mouseEnabled: false">
+        </a-camera>
 
         <a-entity id="marker" mindar-image-target="targetIndex: 4" rotation="0 0 0">
+        </a-entity>
+
+        <a-entity id="model" visible="false" rotation="0 180 0">
             <a-gltf-model id="block" visible="true" position="10 -16 0" scale="4 4 4" gltf-model="#tree"
                 animation-mixer="timeScale:0.5" disable-culling></a-gltf-model>
             <a-gltf-model id="block" visible="true" position="-10 -16 0" scale="2 2 2" gltf-model="#tree"
@@ -288,134 +388,7 @@
     <canvas id="captureCanvas" style="display:none;"></canvas>
     <div id="whiteScreen"></div>
     <script>
-        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
 
-        document.querySelector('a-scene').addEventListener("arReady", (event) => {
-            console.log("A-Frame MindAR ready - camera initialized");
-            document.getElementById('loader').style.display = "none";
-        });
-
-        const title = document.querySelector('#game-title');
-
-        function myFunction() {
-            document.getElementById('center-container').style.display = "none";
-            isStartGame = true;
-            title.style.opacity = '1';
-            if (/android/i.test(userAgent)) {
-                //document.querySelector('a-video').setAttribute("material", "shader: standard");
-            }
-
-            // iOS Device Orientation
-            if (/iPad|iPhone|iPod/.test(userAgent)) {
-                DeviceOrientationEvent.requestPermission ?.().then(response => {
-                    if (response === "granted") {
-                        console.log("iOS orientation granted");
-                    }
-                });
-            }
-        }
-
-        const marker = document.querySelector('#marker');
-        const camera2 = document.querySelector("#myCam");
-        const captureBtn = document.getElementById('captureBtn');
-        const scene = document.querySelector('a-scene');;
-        // const block = document.getElementById('block');
-
-        let isTrigger = false;
-        let isPlaying = false;
-
-        marker.addEventListener("targetFound", event => {
-            if (isTrigger === false && isPlaying === false && window.isStartGame) {
-                console.log("Marker found");
-                title.style.opacity = '0';
-                isTrigger = true;
-                isPlaying = true;
-
-                // block.setAttribute('visible', true);
-
-                const sceneEl = document.querySelector('a-scene');
-                const arSystem = sceneEl.systems["mindar-image-system"];
-                arSystem.pause(true);
-                setTimeout(() => {
-                    camera2.setAttribute("look-controls", "enabled: true");
-                    captureBtn.style.display = "block";
-                }, 100);
-            }
-        });
-
-        captureBtn.addEventListener('click', () => {
-            const captureCanvas = document.getElementById('captureCanvas');
-            const ctx = captureCanvas.getContext('2d');
-
-            let webcamVideo = null;
-            document.querySelectorAll('video').forEach(v => {
-                if (v.srcObject instanceof MediaStream) {
-                    webcamVideo = v;
-                }
-            });
-
-            if (!scene || !webcamVideo) {
-                console.warn("Missing scene or webcam for capture");
-                return;
-            }
-
-            // 計算輸出大小：用 devicePixelRatio 放大（S23 Ultra ~3x）
-            const dpr = (window.devicePixelRatio / 2) || 2;
-            const scaleFactor = 2; // 可調高到 2.5 或 3，視效能
-
-            // 用 CSS 大小作為 base（更準確）
-            const baseWidth = scene.clientWidth;
-            const baseHeight = scene.clientHeight;
-
-            const outputWidth = Math.floor(baseWidth * dpr * scaleFactor);
-            const outputHeight = Math.floor(baseHeight * dpr * scaleFactor);
-
-            captureCanvas.width = outputWidth;
-            captureCanvas.height = outputHeight;
-
-            // Flash 反饋
-            const whiteFlash = document.querySelector('#whiteScreen');
-            whiteFlash.style.opacity = 0.7;
-            whiteFlash.style.display = 'block';
-            setTimeout(() => {
-                whiteFlash.style.opacity = 0;
-                whiteFlash.style.display = 'none';
-            }, 50);
-
-            setTimeout(() => {
-                // 先畫 webcam（cover 全畫面）
-                if (webcamVideo.videoWidth > 0) {
-                    const vidAspect = webcamVideo.videoWidth / webcamVideo.videoHeight;
-                    const outAspect = outputWidth / outputHeight;
-
-                    let drawW = outputWidth;
-                    let drawH = outputHeight;
-                    let offsetX = 0;
-                    let offsetY = 0;
-
-                    if (vidAspect > outAspect) {
-                        drawW = outputHeight * vidAspect;
-                        offsetX = (outputWidth - drawW) / 2;
-                    } else {
-                        drawH = outputWidth / vidAspect;
-                        offsetY = (outputHeight - drawH) / 2;
-                    }
-
-                    ctx.drawImage(webcamVideo, offsetX, offsetY, drawW, drawH);
-                }
-
-                // 再疊 A-Frame 的 screenshot（自動 upscale）
-                const glCanvas = scene.components.screenshot.getCanvas('perspective');
-                ctx.drawImage(glCanvas, 0, 0, outputWidth, outputHeight);
-
-                const dataURL = captureCanvas.toDataURL('image/png');
-
-                const link = document.createElement('a');
-                link.download = `hsk-ar-capture-${Date.now()}.png`;
-                link.href = dataURL;
-                link.click();
-            }, 60);
-        });
     </script>
 </body>
 
