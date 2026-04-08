@@ -244,7 +244,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const img = document.createElement('img');
         img.src = dataURL;
+        img.alt = 'Captured MLS AR Image';
         img.className = 'capture-img';
+
+        // Critical fixes for Android "Save Image"
+        img.style.cssText = `
+            max-width: 94%;
+            max-height: 78%;
+            border: 12px solid #ffffff;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.7);
+            display: block;
+            pointer-events: auto;
+            touch-action: auto;
+            user-select: none;
+            -webkit-user-select: none;
+        `;
 
         const message = document.createElement('div');
         message.textContent = '請長按相片以作儲存';
