@@ -244,7 +244,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const img = document.createElement('img');
         img.src = dataURL;
-        img.alt = 'Captured HSK AR Image';
         img.className = 'capture-img';
 
         const message = document.createElement('div');
