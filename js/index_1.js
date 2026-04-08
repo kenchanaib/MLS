@@ -255,7 +255,7 @@ window.showCapturePreview = function(dataURL) {
 
     const img = document.createElement('img');
     img.src = dataURL;
-    img.alt = 'Captured HSK AR Image';
+    img.alt = 'Captured MLS AR Image';
     img.className = 'capture-img';
     img.style.cssText = `
         display: block; width: 100%; height: auto;
