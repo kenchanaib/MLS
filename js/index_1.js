@@ -253,7 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
             img.className = 'capture-img';
 
             const message = document.createElement('div');
-            message.textContent = '長按圖片儲存';
+            message.innerText  = '請長按圖片儲存\nPlease long press to save the image';
             message.className = 'capture-message';
 
             const closeBtn = document.createElement('div');
