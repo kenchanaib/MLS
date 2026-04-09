@@ -10,6 +10,7 @@ let currentStream = null;
 let isFrontCamera = false;   // false = Back Camera
 
 document.addEventListener('DOMContentLoaded', () => {
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
     const title = document.querySelector('#game-title');
     const marker = document.querySelector('#marker');
     const cameraEl = document.querySelector("#myCam");
@@ -113,6 +114,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (centerContainer) centerContainer.style.display = "none";
             isStartGame = true;
             if (title) title.style.opacity = '1';
+            if (/iPad|iPhone|iPod/.test(userAgent)) {
+            DeviceOrientationEvent.requestPermission?.().then(response => {
+                if (response === "granted") {
+                    console.log("iOS orientation granted");
+                }
+            });
+        }
         });
     }
 
