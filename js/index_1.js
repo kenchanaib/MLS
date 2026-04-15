@@ -77,6 +77,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (videoElement) {
                 videoElement.srcObject = newStream;
                 await videoElement.play();
+                                if (isFrontCamera) {                    // 切換後的狀態
+                videoElement.style.transform = 'scaleX(1)';
+                videoElement.style.transformOrigin = 'center';
+            } else {
+                videoElement.style.transform = 'scaleX(-1)';   // 後置鏡頭恢復正常
+            }
             }
 
             isFrontCamera = !isFrontCamera;
