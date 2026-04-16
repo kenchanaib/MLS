@@ -1,0 +1,405 @@
+<html>
+
+<head>
+    <meta property="og:site_name" content="Ma Liu Shui - CLC">
+    <meta property="og:title" content="Ma Liu Shui - CLC">
+    <meta property="og:description" content="Ma Liu Shui - CLC - AR Game">
+    <meta property="og:type" content="website">
+    <meta property="og:image:alt" content="AR Game">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="icon.svg" type="image/jpeg" sizes="48x48">
+    <title>Ma Liu Shui - CLC - AR Game</title>
+    <script src="js/aframe.min.js"></script>
+    <script src="js/mindar-image-aframe.prod.js"></script>
+    <script src="js/aframe-extras.min.js"></script>
+    <script src="js/index_1.js"></script>
+    <style>
+        /* Ensure the scene takes up the full viewport */
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: black;
+        }
+
+        #game-title {
+            position: fixed;
+            top: 5%;
+            left: 50%;
+            transform: translateX(-50%);
+            /* Center horizontally */
+            width: 320px;
+            /* Fit 75% of screen width */
+            height: auto;
+            /* Maintain aspect ratio */
+            z-index: 5;
+            /* Below video but above AR content */
+            opacity: 0;
+            /* Initially invisible for fade-in */
+            transition: opacity 0.5s ease;
+            /* Smooth fade animation */
+        }
+
+        .arjs-loader {
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .arjs-loader div {
+            text-align: center;
+            font-size: 1.25em;
+            color: white;
+        }
+
+        #center-container {
+            position: absolute;
+            display: block;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-image: src("");
+            background-color: rgba(117 208 238);
+            z-index: 5;
+        }
+
+        #myButton {
+            position: fixed;
+            bottom: 28%;
+            left: 50%;
+            width: 160px;
+            height: 150px;
+            transform: translate(-50%, -40%);
+            /* Center horizontally */
+            background: transparent;
+            border: none;
+            cursor: pointer;
+        }
+
+        #landingPage {
+            position: fixed;
+            /* bottom: -7%; */
+            left: 0;
+            width: 100vw !important;
+            height: 100vh !important;
+            object-fit: cover !important;
+            transform: none !important;
+            display: block;
+            /* Hidden initially */
+        }
+
+        #startBtn {
+            width: 100%;
+            /* height: 100%; */
+            vertical-align: middle;
+        }
+
+        .loading-dots {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loading-dots div {
+            width: 10px;
+            height: 10px;
+            margin: 0 4px;
+            background-color: #3498db;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .loading-dots div:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .loading-dots div:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        .loading-dots div:nth-child(3) {
+            animation-delay: 0s;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0);
+            }
+
+            40% {
+                transform: scale(1);
+            }
+        }
+
+        #captureBtn {
+            display: none;
+            position: fixed;
+            bottom: 8%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            /* ← adjust size to match your photo.png */
+            height: 80px;
+            /* make it square or match image aspect */
+            background: transparent;
+            /* no background needed for image button */
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            z-index: 1000;
+            /* optional: slight shadow or glow for better visibility */
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
+        }
+
+        #captureBtn:active {
+            transform: translateX(-50%) scale(0.92);
+            /* subtle press effect */
+            opacity: 0.85;
+        }
+
+        #home_title {
+            position: fixed;
+            top: 40%;
+            left: 50%;
+            width: 85vw;
+            /* height: 150px; */
+            transform: translate(-50%, -100%);
+            /* Center horizontally */
+            background: transparent;
+            border: none;
+            cursor: pointer;
+        }
+
+        button {
+            outline: none;
+            /* Remove focus outline */
+            -webkit-tap-highlight-color: transparent;
+            /* Remove iOS tap highlight */
+            -webkit-appearance: none;
+            /* Remove default button styling */
+            -moz-appearance: none;
+            /* For cross-browser consistency */
+            appearance: none;
+            /* Standard property */
+            border: none;
+            /* Remove default border */
+            background: #007bff;
+            /* Example background */
+            color: white;
+            /* Example text color */
+            padding: 10px 20px;
+            cursor: pointer;
+            /* Maintain pointer cursor */
+            touch-action: manipulation;
+            /* Optimize touch behavior */
+        }
+
+        /* Ensure no effect on active or focus states */
+        button:focus,
+        button:active {
+            outline: none;
+            box-shadow: none;
+            /* Remove any shadow */
+            background: #007bff;
+            /* Keep consistent background */
+            border: none;
+            /* Keep consistent border */
+        }
+
+        /* === NEW STYLES FOR CAPTURE PREVIEW === */
+        .capture-preview-container {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10001;
+            padding: 15px;
+            box-sizing: border-box;
+            touch-action: auto;
+        }
+
+        .capture-frame {
+            padding: 14px;
+            background: #ffffff;
+            border-radius: 14px;
+            box-shadow: 0 12px 45px rgba(0, 0, 0, 0.75);
+            max-width: 92vw;
+            max-height: 65vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .capture-img {
+            width: auto;
+            height: auto;
+            max-width: 90vw;
+            max-height: 60vh;
+            object-fit: contain;
+            display: block;
+            border-radius: 6px;
+            pointer-events: auto;
+        }
+
+        .capture-message {
+            margin-top: 18px;
+            text-align: center;
+            font-size: 15px;
+            color: #eeeeee;
+            padding: 0 10px;
+        }
+
+        .capture-close-btn {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            width: 38px;
+            height: 38px;
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 300;
+            z-index: 10001;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .capture-close-btn:active {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        #whiteScreen {
+            background-color: black;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            transition: opacity 0.1s ease;
+            opacity: 0;
+            display: none;
+        }
+        #switchCameraBtn {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            width: 50px;
+            height: 50px;
+            background: rgba(0, 0, 0, 0);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 24px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            cursor: pointer;
+            /* box-shadow: 0 2px 8px rgba(0,0,0,0.3); */
+            transition: all 0.2s ease;
+        }
+        #switchCameraBtn:active {
+            transform: scale(0.9);
+            background: rgba(0, 0, 0, 0.8);
+        }
+    </style>
+</head>
+
+<body style='margin : 0px; overflow: hidden;'>
+    <div id="loader" class="arjs-loader">
+        <div class="loading-dots">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+    </div>
+    <div id="center-container">
+        <img id="landingPage" src="bg.jpg">
+        <img id="home_title" src="home_title.png">
+        <button id="myButton">
+            <img id="startBtn" src="Home.png" alt="">
+        </button>
+    </div>
+    <button id="captureBtn">
+        <img src="photo.png" alt="Capture Photo" style="width:100%; height:100%; object-fit: contain;">
+    </button>
+    <button id="switchCameraBtn" title="Switch Camera">
+        <img src="switch.png" alt="Switch Camera" style="width: 50px; height: 50px; object-fit: contain;">
+    </button>
+    <div id="container">
+    </div>
+
+    <img id="game-title" src="title.png" alt="Game Title">
+    <a-scene id="arScene" mindar-image="imageTargetSrc: a.mind; uiScanning:no;filterMinCF:0.0001;filterBeta:10000;"
+        color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights;logarithmicDepthBuffer:true"
+        vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+        <a-assets>
+            <a-asset-item id="tree" src="./FlowerFalling/Flowerfall06.gltf"></a-asset-item>
+        </a-assets>
+
+        <a-camera id="myCam" position="0 0 -4" look-controls="enabled: false; touchEnabled: false; mouseEnabled: false">
+        </a-camera>
+
+        <a-entity id="marker" mindar-image-target="targetIndex: 4" rotation="0 0 0">
+        </a-entity>
+
+        <a-entity id="model" visible="false" rotation="0 180 0">
+            <!-- <a-gltf-model id="block" visible="true" position="10 -16 25" scale="4 4 4" gltf-model="#tree"
+                animation-mixer="timeScale:0.5" disable-culling></a-gltf-model>
+            <a-gltf-model id="block" visible="true" position="-10 -16 25" scale="2 2 2" gltf-model="#tree"
+                animation-mixer="timeScale:0.35" disable-culling></a-gltf-model>
+
+            <a-gltf-model id="block" visible="true" position="15 -16 -10" scale="3 3 3" gltf-model="#tree"
+                animation-mixer="timeScale:0.4" disable-culling></a-gltf-model>
+            <a-gltf-model id="block" visible="true" position="-15 -16 10" scale="3 3 3" gltf-model="#tree"
+                animation-mixer="timeScale:0.55" disable-culling></a-gltf-model>
+
+            <a-gltf-model id="block" visible="true" position="0 -16 15" scale="4 4 4" gltf-model="#tree"
+                animation-mixer="timeScale:0.5" disable-culling></a-gltf-model>
+            <a-gltf-model id="block" visible="true" position="0 -16 -15" scale="3 3 3" gltf-model="#tree"
+                animation-mixer="timeScale:0.35" disable-culling></a-gltf-model> -->
+            <a-gltf-model id="block" visible="true" rotation="0 40 0" position="-10 -26 25" scale="8 8 8" gltf-model="#tree"
+                animation-mixer="timeScale:0.5" disable-culling></a-gltf-model>
+            <a-gltf-model id="block" visible="true" rotation="0 20 0" position="10 -26 25" scale="7 7 7" gltf-model="#tree"
+                animation-mixer="timeScale:0.6" disable-culling></a-gltf-model>
+            <a-gltf-model id="block" visible="true" rotation="0 -20 0" position="-10 -26 25" scale="8 8 8" gltf-model="#tree"
+                animation-mixer="timeScale:0.5" disable-culling></a-gltf-model>
+            <a-gltf-model id="block" visible="true" rotation="0 -40 0" position="-10 -26 25" scale="8 8 8" gltf-model="#tree"
+                animation-mixer="timeScale:0.5" disable-culling></a-gltf-model>
+        </a-entity>
+
+
+    </a-scene>
+    <canvas id="captureCanvas" style="display:none;"></canvas>
+    <div id="whiteScreen"></div>
+    <script>
+
+    </script>
+</body>
+
+</html>

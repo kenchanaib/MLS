@@ -10,7 +10,8 @@
     <meta property="og:image:height" content="630">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" href="icon.svg" type="image/jpeg" sizes="48x48">
+    <link rel="icon" href="icon.png" type="image/jpeg" sizes="48x48">
+    <meta charset="UTF-8">
     <title>Ma Liu Shui - CLC - AR Game</title>
     <script src="js/aframe.min.js"></script>
     <script src="js/mindar-image-aframe.prod.js"></script>
@@ -26,7 +27,7 @@
 
         #game-title {
             position: fixed;
-            top: 5%;
+            top: 20%;
             left: 50%;
             transform: translateX(-50%);
             /* Center horizontally */
@@ -40,6 +41,14 @@
             /* Initially invisible for fade-in */
             transition: opacity 0.5s ease;
             /* Smooth fade animation */
+        }
+
+        #frameHints {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50%;
         }
 
         .arjs-loader {
@@ -76,13 +85,7 @@
         }
 
         #myButton {
-            position: fixed;
-            bottom: 28%;
-            left: 50%;
-            width: 160px;
-            height: 150px;
-            transform: translate(-50%, -40%);
-            /* Center horizontally */
+            width: 120px;
             background: transparent;
             border: none;
             cursor: pointer;
@@ -90,7 +93,7 @@
 
         #landingPage {
             position: fixed;
-            /* bottom: -7%; */
+            bottom: -5%;
             left: 0;
             width: 100vw !important;
             height: 100vh !important;
@@ -173,16 +176,8 @@
         }
 
         #home_title {
-            position: fixed;
-            top: 40%;
-            left: 50%;
-            width: 85vw;
-            /* height: 150px; */
-            transform: translate(-50%, -100%);
-            /* Center horizontally */
-            background: transparent;
-            border: none;
-            cursor: pointer;
+            width: 180px;
+            margin: 0 auto;
         }
 
         button {
@@ -304,6 +299,7 @@
             opacity: 0;
             display: none;
         }
+
         #switchCameraBtn {
             position: fixed;
             top: 15px;
@@ -323,9 +319,68 @@
             /* box-shadow: 0 2px 8px rgba(0,0,0,0.3); */
             transition: all 0.2s ease;
         }
+
         #switchCameraBtn:active {
             transform: scale(0.9);
             background: rgba(0, 0, 0, 0.8);
+        }
+
+        .language-selector {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            align-content: center;
+            display: grid;
+            grid-template-rows: auto auto auto;
+            gap: 80px;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            min-height: 100vh;
+        }
+
+        .language-selector2 {
+            width: 100%;
+            align-content: center;
+            display: grid;
+            grid-template-rows: auto auto auto;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .lang-option {
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+            color: #333;
+        }
+
+        #textbox {
+            max-width: 500px;
+            transition: opacity 0.5s ease-in-out;
+
+            position: fixed;
+            top: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 220px;
+            height: auto;
+            z-index: 5;
+            opacity: 0;
+        }
+        #fullscreen-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover; /* Covers the screen without distortion */
+            z-index: 10; /* Above title and AR content */
+            display: none; /* Hidden initially */
         }
     </style>
 </head>
@@ -339,12 +394,30 @@
         </div>
     </div>
     <div id="center-container">
-        <img id="landingPage" src="bg.jpg">
-        <img id="home_title" src="home_title.png">
-        <button id="myButton">
-            <img id="startBtn" src="Home.png" alt="">
-        </button>
+        <img id="landingPage" src="bg2.jpg">
+        <div class="language-selector">
+            <img id="home_title" src="home_title.png">
+            <div class="language-selector2">
+                <button id="myButton">
+                    <img id="startBtn" src="tc.png" alt="">
+                </button>
+                <button id="myButton">
+                    <img id="startBtn" src="sc.png" alt="">
+                </button>
+                <button id="myButton">
+                    <img id="startBtn" src="en.png" alt="">
+                </button>
+            </div>
+        </div>
     </div>
+
+      <video id="fullscreen-video" autoplay preload="metadata" muted playsinline>
+        <!-- <source src="Banana.webm" type="video/webm">   -->
+        <source src="Flower_Lion_1.mov" type='video/mp4; codecs="hvc1"'>
+        <source src="Flower_Lion_1.webm" type="video/webm"> 
+        Your browser does not support the video tag.
+    </video>
+
     <button id="captureBtn">
         <img src="photo.png" alt="Capture Photo" style="width:100%; height:100%; object-fit: contain;">
     </button>
@@ -354,8 +427,10 @@
     <div id="container">
     </div>
 
-    <img id="game-title" src="title.png" alt="Game Title">
-    <a-scene id="arScene" mindar-image="imageTargetSrc: a.mind; uiScanning:no;filterMinCF:0.0001;filterBeta:10000;"
+    <img id="game-title" src="title2.png" alt="Game Title">
+    <img id="textbox" src="text1.png">
+    <img id="frameHints" src="frame.png">
+    <a-scene id="arScene" mindar-image="imageTargetSrc: a.mind;autoStart:true;uiLoading: no;maxTrack: 1; uiScanning:no;filterMinCF:0.0001;filterBeta:10000;"
         color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights;logarithmicDepthBuffer:true"
         vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
         <a-assets>
@@ -369,28 +444,14 @@
         </a-entity>
 
         <a-entity id="model" visible="false" rotation="0 180 0">
-            <!-- <a-gltf-model id="block" visible="true" position="10 -16 25" scale="4 4 4" gltf-model="#tree"
-                animation-mixer="timeScale:0.5" disable-culling></a-gltf-model>
-            <a-gltf-model id="block" visible="true" position="-10 -16 25" scale="2 2 2" gltf-model="#tree"
-                animation-mixer="timeScale:0.35" disable-culling></a-gltf-model>
-
-            <a-gltf-model id="block" visible="true" position="15 -16 -10" scale="3 3 3" gltf-model="#tree"
-                animation-mixer="timeScale:0.4" disable-culling></a-gltf-model>
-            <a-gltf-model id="block" visible="true" position="-15 -16 10" scale="3 3 3" gltf-model="#tree"
-                animation-mixer="timeScale:0.55" disable-culling></a-gltf-model>
-
-            <a-gltf-model id="block" visible="true" position="0 -16 15" scale="4 4 4" gltf-model="#tree"
-                animation-mixer="timeScale:0.5" disable-culling></a-gltf-model>
-            <a-gltf-model id="block" visible="true" position="0 -16 -15" scale="3 3 3" gltf-model="#tree"
-                animation-mixer="timeScale:0.35" disable-culling></a-gltf-model> -->
-            <a-gltf-model id="block" visible="true" rotation="0 40 0" position="-10 -26 25" scale="8 8 8" gltf-model="#tree"
-                animation-mixer="timeScale:0.5" disable-culling></a-gltf-model>
-            <a-gltf-model id="block" visible="true" rotation="0 20 0" position="10 -26 25" scale="7 7 7" gltf-model="#tree"
-                animation-mixer="timeScale:0.6" disable-culling></a-gltf-model>
-            <a-gltf-model id="block" visible="true" rotation="0 -20 0" position="-10 -26 25" scale="8 8 8" gltf-model="#tree"
-                animation-mixer="timeScale:0.5" disable-culling></a-gltf-model>
-            <a-gltf-model id="block" visible="true" rotation="0 -40 0" position="-10 -26 25" scale="8 8 8" gltf-model="#tree"
-                animation-mixer="timeScale:0.5" disable-culling></a-gltf-model>
+            <a-gltf-model id="block" visible="true" rotation="0 40 0" position="-10 -26 25" scale="8 8 8"
+                gltf-model="#tree" animation-mixer="timeScale:0.5" disable-culling></a-gltf-model>
+            <a-gltf-model id="block" visible="true" rotation="0 20 0" position="10 -26 25" scale="7 7 7"
+                gltf-model="#tree" animation-mixer="timeScale:0.6" disable-culling></a-gltf-model>
+            <a-gltf-model id="block" visible="true" rotation="0 -20 0" position="-10 -26 25" scale="8 8 8"
+                gltf-model="#tree" animation-mixer="timeScale:0.5" disable-culling></a-gltf-model>
+            <a-gltf-model id="block" visible="true" rotation="0 -40 0" position="-10 -26 25" scale="8 8 8"
+                gltf-model="#tree" animation-mixer="timeScale:0.5" disable-culling></a-gltf-model>
         </a-entity>
 
 
