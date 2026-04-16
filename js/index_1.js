@@ -16,11 +16,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const cameraEl = document.querySelector("#myCam");
     const captureBtn = document.getElementById('captureBtn');
     const startBtn = document.getElementById('myButton');
+    const frameHints = document.getElementById('frameHints');
     const switchBtn = document.getElementById('switchCameraBtn');
     const sceneEl = document.querySelector('#arScene');     // Main scene
     const scene = document.querySelector('a-scene');        // ← Fixed: This was missing
     const loader = document.getElementById('loader');
     const model = document.getElementById('model');
+    const video = document.querySelector('#fullscreen-video');
 
     let isTrigger = false;
     let isPlaying = false;
@@ -28,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     sceneEl.addEventListener('loaded', () => {
         arSystem = sceneEl.systems['mindar-image-system'];
+        
         console.log('MindAR Image System loaded');
     });
 
@@ -77,7 +80,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (videoElement) {
                 videoElement.srcObject = newStream;
                 await videoElement.play();
-                                if (isFrontCamera) {                    // 切換後的狀態
+
+                if (isFrontCamera) {                    // 切換後的狀態
                 videoElement.style.transform = 'scaleX(1)';
                 videoElement.style.transformOrigin = 'center';
             } else {
@@ -119,6 +123,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const centerContainer = document.getElementById('center-container');
             if (centerContainer) centerContainer.style.display = "none";
             isStartGame = true;
+            video.play();
+            video.pause();
+            video.currentTime = 0;
             if (title) title.style.opacity = '1';
             if (/iPad|iPhone|iPod/.test(userAgent)) {
             DeviceOrientationEvent.requestPermission?.().then(response => {
@@ -130,6 +137,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const images = ['text1.png', 'text2.png', 'text3.png'];
+    let currentIndex = 0;
+    let cycleCount = 0; // Track how many times we've shown an image
+    const slideElement = document.getElementById('textbox');
+
+    video.addEventListener('ended',()=>{
+      video.style.display = 'none';
+    });
+
     // Marker Found
     if (marker) {
         marker.addEventListener("targetFound", () => {
@@ -137,6 +153,36 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log("✅ Marker found");
 
                 if (title) title.style.opacity = '0';
+                if(frameHints) frameHints.style.opacity = '0';
+                slideElement.style.opacity = '1';
+
+                video.style.display = 'block';
+                video.play();
+                video.currentTime = 0;
+
+                const timer = setInterval(() => {
+                    currentIndex++;
+
+                    // If we reach the end of the array, loop back
+                    if (currentIndex >= images.length) {
+                        currentIndex = 0;
+                        cycleCount++; // One full loop completed
+                    }
+
+                    // Stop everything after 2 full cycles
+                    if (cycleCount === 1) {
+                        clearInterval(timer);
+                        slideElement.style.opacity = '0';
+                        if (switchBtn) switchBtn.style.display = 'flex';
+                        if (captureBtn) captureBtn.style.display = "block";
+                        console.log("Animation finished after 2 cycles.");
+                        return;
+                    }
+
+                    // Change the image
+                    slideElement.src = images[currentIndex];
+                
+                }, 3333);
 
                 isTrigger = true;
                 isPlaying = true;
@@ -145,11 +191,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 const arSys = sceneEl?.systems["mindar-image-system"];
                 if (arSys) arSys.pause(true);
 
-                if (switchBtn) switchBtn.style.display = 'flex';
+                
 
                 setTimeout(() => {
                     if (cameraEl) cameraEl.setAttribute("look-controls", "enabled: true");
-                    if (captureBtn) captureBtn.style.display = "block";
+                    
                 }, 100);
             }
         });
@@ -157,94 +203,137 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ===================== FIXED CAPTURE LOGIC =====================
     if (captureBtn) {
-        captureBtn.addEventListener('click', () => {
-            const captureCanvas = document.getElementById('captureCanvas');
-            if (!captureCanvas) return;
+    captureBtn.addEventListener('click', () => {
+        const captureCanvas = document.getElementById('captureCanvas');
+        if (!captureCanvas) return;
 
-            const ctx = captureCanvas.getContext('2d', { alpha: false });
+        const ctx = captureCanvas.getContext('2d', { alpha: false });
 
-            setTimeout(() => {   // Small delay for stability
-                let webcamVideo = null;
-                document.querySelectorAll('video').forEach(v => {
-                    if (v.srcObject instanceof MediaStream && v.videoWidth > 100) {
-                        webcamVideo = v;
-                    }
-                });
-
-                if (!webcamVideo) {
-                    alert("Cannot access camera feed. Please try again.");
-                    return;
+        setTimeout(() => {
+            let webcamVideo = null;
+            document.querySelectorAll('video').forEach(v => {
+                if (v.srcObject instanceof MediaStream && v.videoWidth > 100) {
+                    webcamVideo = v;
                 }
+            });
 
-                // White flash effect
-                const whiteFlash = document.querySelector('#whiteScreen');
-                if (whiteFlash) {
-                    whiteFlash.style.opacity = 0.9;
-                    whiteFlash.style.display = 'block';
-                    setTimeout(() => {
-                        whiteFlash.style.opacity = 0;
-                        setTimeout(() => whiteFlash.style.display = 'none', 400);
-                    }, 80);
-                }
+            if (!webcamVideo) {
+                alert("Cannot access camera feed. Please try again.");
+                return;
+            }
 
+            // White flash effect
+            const whiteFlash = document.querySelector('#whiteScreen');
+            if (whiteFlash) {
+                whiteFlash.style.opacity = 0.9;
+                whiteFlash.style.display = 'block';
                 setTimeout(() => {
-                    let baseWidth = scene.clientWidth || window.innerWidth;   // ← Now 'scene' is defined
-                    let baseHeight = scene.clientHeight || window.innerHeight;
+                    whiteFlash.style.opacity = 0;
+                    setTimeout(() => whiteFlash.style.display = 'none', 400);
+                }, 80);
+            }
 
-                    const dpr = window.devicePixelRatio || 2;
-                    let scaleFactor = 1.5;
+            setTimeout(() => {
+                let baseWidth = scene.clientWidth || window.innerWidth;
+                let baseHeight = scene.clientHeight || window.innerHeight;
 
-                    let outputWidth = Math.floor(baseWidth * dpr * scaleFactor);
-                    let outputHeight = Math.floor(baseHeight * dpr * scaleFactor);
+                const dpr = window.devicePixelRatio || 2;
+                let scaleFactor = 1.5;
 
-                    const MAX_DIM = 1600;
-                    if (outputWidth > MAX_DIM || outputHeight > MAX_DIM) {
-                        const ratio = MAX_DIM / Math.max(outputWidth, outputHeight);
-                        outputWidth = Math.floor(outputWidth * ratio);
-                        outputHeight = Math.floor(outputHeight * ratio);
+                let outputWidth = Math.floor(baseWidth * dpr * scaleFactor);
+                let outputHeight = Math.floor(baseHeight * dpr * scaleFactor);
+
+                const MAX_DIM = 1600;
+                if (outputWidth > MAX_DIM || outputHeight > MAX_DIM) {
+                    const ratio = MAX_DIM / Math.max(outputWidth, outputHeight);
+                    outputWidth = Math.floor(outputWidth * ratio);
+                    outputHeight = Math.floor(outputHeight * ratio);
+                }
+
+                captureCanvas.width = outputWidth;
+                captureCanvas.height = outputHeight;
+
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(0, 0, outputWidth, outputHeight);
+
+                // Draw camera video
+                if (webcamVideo && webcamVideo.videoWidth > 100) {
+                    const vidAspect = webcamVideo.videoWidth / webcamVideo.videoHeight;
+                    const outAspect = outputWidth / outputHeight;
+
+                    let drawW = outputWidth, drawH = outputHeight, offsetX = 0, offsetY = 0;
+
+                    if (vidAspect > outAspect) {
+                        drawW = outputHeight * vidAspect;
+                        offsetX = (outputWidth - drawW) / 2;
+                    } else {
+                        drawH = outputWidth / vidAspect;
+                        offsetY = (outputHeight - drawH) / 2;
+                    }
+                    ctx.drawImage(webcamVideo, offsetX, offsetY, drawW, drawH);
+                }
+
+                // Draw AR content
+                try {
+                    const glCanvas = scene.components.screenshot?.getCanvas('perspective');
+                    if (glCanvas && glCanvas.width > 50) {
+                        ctx.drawImage(glCanvas, 0, 0, outputWidth, outputHeight);
+                    }
+                } catch (e) {
+                    console.warn("AR screenshot failed:", e);
+                }
+
+                // ==================== ADD WATERMARK (logo.png) ====================
+                const logo = new Image();
+                logo.src = 'icon.png';   // Make sure this path is correct
+
+                logo.onload = () => {
+                    // Watermark settings
+                    const padding = 40;           // padding from bottom
+                    const maxLogoWidth = outputWidth * 0.5;  // max 35% of width
+                    const logoAspect = logo.width / logo.height;
+                    
+                    let logoHeight = Math.min(120, outputHeight * 0.08); // max ~8% of height
+                    let logoWidth = logoHeight * logoAspect;
+
+                    // Scale down if too wide
+                    if (logoWidth > maxLogoWidth) {
+                        logoWidth = maxLogoWidth;
+                        logoHeight = logoWidth / logoAspect;
                     }
 
-                    captureCanvas.width = outputWidth;
-                    captureCanvas.height = outputHeight;
+                    const x = padding;           // centered
+                    const y = padding; // bottom
 
-                    ctx.fillStyle = '#000000';
-                    ctx.fillRect(0, 0, outputWidth, outputHeight);
+                    // Optional: Add subtle shadow/glow for better visibility
+                    ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+                    ctx.shadowBlur = 15;
+                    ctx.shadowOffsetX = 0;
+                    ctx.shadowOffsetY = 2;
 
-                    // Draw camera video
-                    if (webcamVideo && webcamVideo.videoWidth > 100) {
-                        const vidAspect = webcamVideo.videoWidth / webcamVideo.videoHeight;
-                        const outAspect = outputWidth / outputHeight;
+                    ctx.drawImage(logo, x, y, logoWidth, logoHeight);
 
-                        let drawW = outputWidth, drawH = outputHeight, offsetX = 0, offsetY = 0;
+                    // Reset shadow
+                    ctx.shadowBlur = 0;
+                    ctx.shadowOffsetY = 0;
 
-                        if (vidAspect > outAspect) {
-                            drawW = outputHeight * vidAspect;
-                            offsetX = (outputWidth - drawW) / 2;
-                        } else {
-                            drawH = outputWidth / vidAspect;
-                            offsetY = (outputHeight - drawH) / 2;
-                        }
-                        ctx.drawImage(webcamVideo, offsetX, offsetY, drawW, drawH);
-                    }
-
-                    // Draw AR content
-                    try {
-                        const glCanvas = scene.components.screenshot?.getCanvas('perspective');
-                        if (glCanvas && glCanvas.width > 50) {
-                            ctx.drawImage(glCanvas, 0, 0, outputWidth, outputHeight);
-                        }
-                    } catch (e) {
-                        console.warn("AR screenshot failed:", e);
-                    }
-
-                    const dataURL = captureCanvas.toDataURL('image/png', 0.82);
+                    // Generate final image with watermark
+                    const dataURL = captureCanvas.toDataURL('image/png', 0.85);
                     showCapturePreview(dataURL);
+                };
 
-                }, 250);
+                // Fallback: if logo fails to load, still save without watermark
+                logo.onerror = () => {
+                    console.warn("Watermark logo.png failed to load.");
+                    const dataURL = captureCanvas.toDataURL('image/png', 0.85);
+                    showCapturePreview(dataURL);
+                };
 
-            }, 100);
-        });
-    }
+            }, 250);
+
+        }, 100);
+    });
+}
 
     // Capture Preview
     window.showCapturePreview = function(dataURL) {
