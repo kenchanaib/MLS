@@ -436,7 +436,7 @@
         color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights;logarithmicDepthBuffer:true"
         vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
         <a-assets>
-            <a-asset-item id="tree" src="./FlowerFalling/FlowerFalling02.gltf"></a-asset-item>
+            <a-asset-item id="tree" src="./FlowerFalling/Flowerfall_70Particle.gltf"></a-asset-item>
         </a-assets>
 
         <a-camera id="myCam" position="0 0 -4" look-controls="enabled: false; touchEnabled: false; mouseEnabled: false">
@@ -446,51 +446,65 @@
         </a-entity>
 
         <a-entity id="model" visible="false" rotation="0 180 0">
-                        <a-gltf-model id="block" visible="true" position="10 -16 25" scale="4 4 4" gltf-model="#tree"
-                animation-mixer="timeScale:0.5" disable-culling></a-gltf-model>
+            <a-gltf-model id="block" visible="true" position="10 -16 25" scale="4 4 4" gltf-model="#tree"
+                animation-mixer="timeScale:0.2" disable-culling></a-gltf-model>
             <a-gltf-model id="block" visible="true" position="-10 -16 25" scale="2 2 2" gltf-model="#tree"
                 animation-mixer="timeScale:0.35" disable-culling></a-gltf-model>
 
             <a-gltf-model id="block" visible="true" position="15 -16 -10" scale="3 3 3" gltf-model="#tree"
-                animation-mixer="timeScale:0.4" disable-culling></a-gltf-model>
+                animation-mixer="timeScale:0.3" disable-culling></a-gltf-model>
             <a-gltf-model id="block" visible="true" position="-15 -16 10" scale="3 3 3" gltf-model="#tree"
-                animation-mixer="timeScale:0.55" disable-culling></a-gltf-model>
+                animation-mixer="timeScale:0.4" disable-culling></a-gltf-model>
 
             <a-gltf-model id="block" visible="true" position="0 -16 15" scale="4 4 4" gltf-model="#tree"
-                animation-mixer="timeScale:0.5" disable-culling></a-gltf-model>
+                animation-mixer="timeScale:0.3" disable-culling></a-gltf-model>
             <a-gltf-model id="block" visible="true" position="0 -16 -15" scale="3 3 3" gltf-model="#tree"
                 animation-mixer="timeScale:0.35" disable-culling></a-gltf-model>
 
-                                        <a-gltf-model id="block" visible="true" position="10 -16 25" scale="5 5 5" gltf-model="#tree"
-                animation-mixer="timeScale:0.5" disable-culling></a-gltf-model>
+            <a-gltf-model id="block" visible="true" position="10 -16 25" scale="5 5 5" gltf-model="#tree"
+                animation-mixer="timeScale:0.3" disable-culling></a-gltf-model>
+
+            <a-gltf-model id="block" visible="true" position="2 -16 -14" scale="5 5 5" gltf-model="#tree"
+                animation-mixer="timeScale:0.3" disable-culling></a-gltf-model>
+
             <a-gltf-model id="block" visible="true" position="-10 -16 25" scale="6 6 6" gltf-model="#tree"
                 animation-mixer="timeScale:0.35" disable-culling></a-gltf-model>
 
             <a-gltf-model id="block" visible="true" position="14 -16 -11" scale="7 7 7" gltf-model="#tree"
-                animation-mixer="timeScale:0.4" disable-culling></a-gltf-model>
+                animation-mixer="timeScale:0.2" disable-culling></a-gltf-model>
+
+            <a-gltf-model id="block" visible="true" position="4 -25 -11" scale="7 7 7" gltf-model="#tree"
+                animation-mixer="timeScale:0.2" disable-culling></a-gltf-model>
+
             <a-gltf-model id="block" visible="true" position="-14 -16 11" scale="8 8 8" gltf-model="#tree"
-                animation-mixer="timeScale:0.55" disable-culling></a-gltf-model>
+                animation-mixer="timeScale:0.25" disable-culling></a-gltf-model>
+
+            <a-gltf-model id="block" visible="true" position="6 -30 -21" scale="8 8 8" gltf-model="#tree"
+                animation-mixer="timeScale:0.25" disable-culling></a-gltf-model>
+
+            <a-gltf-model id="block" visible="true" position="36 -30 -21" scale="8 8 8" gltf-model="#tree"
+                animation-mixer="timeScale:0.25" disable-culling></a-gltf-model>
 
             <a-gltf-model id="block" visible="true" position="2 -16 16" scale="5 5 5" gltf-model="#tree"
-                animation-mixer="timeScale:0.5" disable-culling></a-gltf-model>
+                animation-mixer="timeScale:0.25" disable-culling></a-gltf-model>
             <a-gltf-model id="block" visible="true" position="2 -16 -16" scale="6 6 6" gltf-model="#tree"
                 animation-mixer="timeScale:0.35" disable-culling></a-gltf-model>
 
             <a-gltf-model id="block" visible="true" rotation="0 40 0" position="-10 -26 25" scale="8 8 8"
-                gltf-model="#tree" animation-mixer="timeScale:0.5" disable-culling></a-gltf-model>
+                gltf-model="#tree" animation-mixer="timeScale:0.25" disable-culling></a-gltf-model>
             <a-gltf-model id="block" visible="true" rotation="0 20 0" position="10 -26 25" scale="7 7 7"
-                gltf-model="#tree" animation-mixer="timeScale:0.6" disable-culling></a-gltf-model>
+                gltf-model="#tree" animation-mixer="timeScale:0.3" disable-culling></a-gltf-model>
             <a-gltf-model id="block" visible="true" rotation="0 -20 0" position="-10 -26 25" scale="8 8 8"
-                gltf-model="#tree" animation-mixer="timeScale:0.5" disable-culling></a-gltf-model>
+                gltf-model="#tree" animation-mixer="timeScale:0.4" disable-culling></a-gltf-model>
             <a-gltf-model id="block" visible="true" rotation="0 -40 0" position="-10 -26 25" scale="8 8 8"
-                gltf-model="#tree" animation-mixer="timeScale:0.5" disable-culling></a-gltf-model>
+                gltf-model="#tree" animation-mixer="timeScale:0.35" disable-culling></a-gltf-model>
 
             <a-gltf-model id="block" visible="true" rotation="0 45 0" position="-10 -35 25" scale="8 8 8"
-                gltf-model="#tree" animation-mixer="timeScale:0.5" disable-culling></a-gltf-model>
+                gltf-model="#tree" animation-mixer="timeScale:0.35" disable-culling></a-gltf-model>
             <a-gltf-model id="block" visible="true" rotation="0 25 0" position="10 -35 25" scale="7 7 7"
-                gltf-model="#tree" animation-mixer="timeScale:0.6" disable-culling></a-gltf-model>
+                gltf-model="#tree" animation-mixer="timeScale:0.4" disable-culling></a-gltf-model>
             <a-gltf-model id="block" visible="true" rotation="0 -25 0" position="-10 -45 25" scale="8 8 8"
-                gltf-model="#tree" animation-mixer="timeScale:0.5" disable-culling></a-gltf-model>
+                gltf-model="#tree" animation-mixer="timeScale:0.25" disable-culling></a-gltf-model>
         </a-entity>
 
 
