@@ -364,7 +364,7 @@ body {
             transition: opacity 0.5s ease-in-out;
 
             position: fixed;
-            top: 13%;
+            top: 11%;
             left: 50%;
             transform: translateX(-50%);
             width: 220px;
