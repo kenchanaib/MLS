@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let isTrigger = false;
     let isPlaying = false;
     let isStartGame = false;
+    let wasArPausedByVisibility = false; // Flag to track if we turned it off due to tab-switching
 
     sceneEl.addEventListener('loaded', () => {
         arSystem = sceneEl.systems['mindar-image-system'];
@@ -40,6 +41,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+
+    let arIndex = window.location.pathname.split('/').pop().split('.')[0];
 
     async function toggleCamera() {
         if (!arSystem || !model) {
@@ -119,6 +122,60 @@ document.addEventListener('DOMContentLoaded', () => {
     if (switchBtn) {
         switchBtn.addEventListener('click', toggleCamera);
     }
+
+    // --- NEW: Page Visibility Handlers for Android Chrome ---
+    function handleVisibilityChange() {
+        if (document.hidden) {
+            console.log("User left page. Disabling webcam streams...");
+            
+            // 1. Tell MindAR system to pause tracking
+            if (arSystem) {
+                try {
+                    arSystem.pause(true);
+                    wasArPausedByVisibility = true;
+                } catch(e) { console.warn(e); }
+            }
+
+            // 2. Pause overlay video if playing
+            if (video && !video.paused) {
+                video.pause();
+            }
+
+            // 3. Force stop any active hardware video streams (kills the Green indicator light on Android)
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+                currentStream = null;
+            }
+            document.querySelectorAll('video').forEach(v => {
+                if (v.srcObject && v.id !== 'fullscreen-video') {
+                    v.srcObject.getTracks().forEach(track => track.stop());
+                    v.srcObject = null;
+                }
+            });
+        } else {
+            console.log("User returned to page. Resuming webcam features...");
+            
+            // If we intentionally paused it when they left, rebuild or unpause
+            if (wasArPausedByVisibility) {
+                wasArPausedByVisibility = false;
+                
+                // If the game had already started, we reload the camera stream dynamically
+                if (isStartGame && arSystem) {
+                    // Force a light rebuild/unpause framework cycle by refreshing native streams or reloading safely
+                    // For modern SPAs / WebXRs, a soft location reload ensures WebGL context & Camera tokens match perfectly without locking up.
+                    window.location.reload(); 
+                } else if (arSystem) {
+                    try {
+                        arSystem.unpause();
+                    } catch(e) {
+                        window.location.reload();
+                    }
+                }
+            }
+        }
+    }
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    // --------------------------------------------------------
 
     if (startBtn) {
         startBtn.addEventListener('click', () => {
@@ -281,20 +338,16 @@ document.addEventListener('DOMContentLoaded', () => {
                             offsetY = (outputHeight - drawH) / 2;
                         }
 
-                        // Save context configuration before modifying transformations
                         ctx.save();
 
                         if (isFrontCamera) {
-                            // Mirror horizontally: Translate canvas to right edge and scale horizontally by -1
                             ctx.translate(outputWidth, 0);
                             ctx.scale(-1, 1);
-                            // Because context coordinate space flips, adjust offset position accordingly
                             ctx.drawImage(webcamVideo, (outputWidth - drawW) - offsetX, offsetY, drawW, drawH);
                         } else {
                             ctx.drawImage(webcamVideo, offsetX, offsetY, drawW, drawH);
                         }
 
-                        // Restore original context transformation for subsequent drawing operations
                         ctx.restore();
                     }
 
@@ -308,7 +361,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         console.warn("AR screenshot failed:", e);
                     }
 
-                    // 3. Draw Fullscreen Video Layer (884x1920) - OBJECT-FIT: COVER style
+                    // 3. Draw Fullscreen Video Layer
                     if (video && video.style.display !== 'none') {
                         try {
                             const vWidth = video.videoWidth || 884;
@@ -318,15 +371,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
                             let drawW, drawH, xOffset, yOffset;
 
-                            // Calculate target parameters to cover the container canvas entirely
                             if (videoAspect > canvasAspect) {
-                                // Video is wider than canvas ratio; match height and clip the horizontal sides
                                 drawH = outputHeight;
                                 drawW = outputHeight * videoAspect;
                                 xOffset = (outputWidth - drawW) / 2;
                                 yOffset = 0;
                             } else {
-                                // Video is taller than canvas ratio; match width and clip the vertical sides
                                 drawW = outputWidth;
                                 drawH = outputWidth / videoAspect;
                                 xOffset = 0;
@@ -386,63 +436,73 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Capture Preview
+    function dataURLtoBlob(dataurl) {
+        var arr = dataurl.split(','), 
+            mime = arr[0].match(/:(.*?);/)[1],
+            bstr = atob(arr[1]), 
+            n = bstr.length, 
+            u8arr = new Uint8Array(n);
+        while(n--){
+            u8arr[n] = bstr.charCodeAt(n);
+        }
+        return new Blob([u8arr], {type:mime});
+    }
+
     window.showCapturePreview = function (dataURL) {
         document.querySelectorAll('.capture-preview-container').forEach(el => el.remove());
 
-        fetch(dataURL)
-            .then(res => res.blob())
-            .then(blob => {
-                const blobUrl = URL.createObjectURL(blob);
+        try {
+            const blob = dataURLtoBlob(dataURL);
+            const blobUrl = URL.createObjectURL(blob);
 
-                const container = document.createElement('div');
-                container.className = 'capture-preview-container';
+            const container = document.createElement('div');
+            container.className = 'capture-preview-container';
 
-                const frame = document.createElement('div');
-                frame.className = 'capture-frame';
+            const frame = document.createElement('div');
+            frame.className = 'capture-frame';
 
-                const img = document.createElement('img');
-                img.src = blobUrl;
-                img.alt = 'Captured MLS AR Image';
-                img.className = 'capture-img';
+            const img = document.createElement('img');
+            img.src = blobUrl;
+            img.alt = 'Captured MLS AR Image';
+            img.className = 'capture-img';
 
-                const message = document.createElement('div');
-                message.innerText = '請長按圖片儲存';
-                message.className = 'capture-message';
+            const message = document.createElement('div');
+            message.innerText = '請長按圖片儲存';
+            message.className = 'capture-message';
 
-                const closeBtn = document.createElement('div');
-                closeBtn.innerHTML = '&times;';
-                closeBtn.className = 'capture-close-btn';
+            const closeBtn = document.createElement('div');
+            closeBtn.innerHTML = '&times;';
+            closeBtn.className = 'capture-close-btn';
 
-                frame.appendChild(img);
-                container.appendChild(frame);
-                container.appendChild(message);
-                container.appendChild(closeBtn);
-                document.body.appendChild(container);
+            frame.appendChild(img);
+            container.appendChild(frame);
+            container.appendChild(message);
+            container.appendChild(closeBtn);
+            document.body.appendChild(container);
 
-                closeBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    cleanup();
-                });
-
-                container.addEventListener('click', (e) => {
-                    if (e.target === container || e.target === message) {
-                        cleanup();
-                    }
-                });
-
-                function cleanup() {
-                    container.remove();
-                    setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
-                }
-
-                setTimeout(() => {
-                    if (container.parentNode) cleanup();
-                }, 30000);
-
-            })
-            .catch(err => {
-                console.error("Blob conversion failed:", err);
-                alert("無法顯示預覽，請重試");
+            closeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                cleanup();
             });
+
+            container.addEventListener('click', (e) => {
+                if (e.target === container || e.target === message) {
+                    cleanup();
+                }
+            });
+
+            function cleanup() {
+                container.remove();
+                setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+            }
+
+            setTimeout(() => {
+                if (container.parentNode) cleanup();
+            }, 30000);
+
+        } catch (err) {
+            console.error("Blob conversion failed:", err);
+            alert("無法顯示預覽，請重試");
+        }
     };
 });
