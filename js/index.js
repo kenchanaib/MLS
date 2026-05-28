@@ -224,7 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     video.play();
                     setTimeout(()=>{
                         video.style.display = 'block';
-                    },100)
+                    },50)
                     slideElement.src = images[0];
                     const timer = setInterval(() => {
                         currentIndex++;
