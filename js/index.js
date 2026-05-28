@@ -175,11 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (centerContainer) centerContainer.style.display = "none";
             isStartGame = true;
             video.play();
-            setTimeout(()=>{
-                video.pause();
-            }, 50)
-
-            video.currentTime = 0;
+            // video.currentTime = 0;
             if (title) title.style.opacity = '1';
             if (/iPad|iPhone|iPod/.test(userAgent)) {
                 DeviceOrientationEvent.requestPermission ?.().then(response => {
@@ -224,9 +220,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (frameHints) frameHints.style.opacity = '0';
                     slideElement.style.opacity = '1';
 
+                    video.currentTime = 0;
                     video.style.display = 'block';
                     video.play();
-                    video.currentTime = 0;
                     slideElement.src = images[0];
                     const timer = setInterval(() => {
                         currentIndex++;
