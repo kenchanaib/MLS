@@ -123,12 +123,10 @@ document.addEventListener('DOMContentLoaded', () => {
         switchBtn.addEventListener('click', toggleCamera);
     }
 
-    // --- NEW: Page Visibility Handlers for Android Chrome ---
     function handleVisibilityChange() {
         if (document.hidden) {
             console.log("User left page. Disabling webcam streams...");
             
-            // 1. Tell MindAR system to pause tracking
             if (arSystem) {
                 try {
                     arSystem.pause(true);
@@ -136,12 +134,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 } catch(e) { console.warn(e); }
             }
 
-            // 2. Pause overlay video if playing
             if (video && !video.paused) {
                 video.pause();
             }
 
-            // 3. Force stop any active hardware video streams (kills the Green indicator light on Android)
             if (currentStream) {
                 currentStream.getTracks().forEach(track => track.stop());
                 currentStream = null;
@@ -155,14 +151,10 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             console.log("User returned to page. Resuming webcam features...");
             
-            // If we intentionally paused it when they left, rebuild or unpause
             if (wasArPausedByVisibility) {
                 wasArPausedByVisibility = false;
                 
-                // If the game had already started, we reload the camera stream dynamically
                 if (isStartGame && arSystem) {
-                    // Force a light rebuild/unpause framework cycle by refreshing native streams or reloading safely
-                    // For modern SPAs / WebXRs, a soft location reload ensures WebGL context & Camera tokens match perfectly without locking up.
                     window.location.reload(); 
                 } else if (arSystem) {
                     try {
@@ -194,6 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
         });
+        
     }
 
     let images = ['images/text1.png', 'images/text2.png', 'images/text3.png'];
@@ -221,47 +214,50 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (marker) {
         marker.addEventListener("targetFound", () => {
-            if (!isTrigger && !isPlaying && isStartGame) {
+            const myInterval = setInterval(()=>{
+                if (!isTrigger && !isPlaying && isStartGame) {
+                    clearInterval(myInterval); 
+                    if (title) title.style.opacity = '0';
+                    if (frameHints) frameHints.style.opacity = '0';
+                    slideElement.style.opacity = '1';
 
-                if (title) title.style.opacity = '0';
-                if (frameHints) frameHints.style.opacity = '0';
-                slideElement.style.opacity = '1';
+                    video.style.display = 'block';
+                    video.play();
+                    video.currentTime = 0;
+                    slideElement.src = images[0];
+                    const timer = setInterval(() => {
+                        currentIndex++;
 
-                video.style.display = 'block';
-                video.play();
-                video.currentTime = 0;
-                slideElement.src = images[0];
-                const timer = setInterval(() => {
-                    currentIndex++;
+                        if (currentIndex >= images.length) {
+                            currentIndex = 0;
+                            cycleCount++;
+                        }
 
-                    if (currentIndex >= images.length) {
-                        currentIndex = 0;
-                        cycleCount++;
-                    }
+                        if (cycleCount === 1) {
+                            clearInterval(timer);
+                            slideElement.style.opacity = '0';
+                            if (switchBtn) switchBtn.style.display = 'flex';
+                            if (captureBtn) captureBtn.style.display = "block";
+                            return;
+                        }
 
-                    if (cycleCount === 1) {
-                        clearInterval(timer);
-                        slideElement.style.opacity = '0';
-                        if (switchBtn) switchBtn.style.display = 'flex';
-                        if (captureBtn) captureBtn.style.display = "block";
-                        return;
-                    }
+                        slideElement.src = images[currentIndex];
 
-                    slideElement.src = images[currentIndex];
+                    }, 3333);
 
-                }, 3333);
+                    isTrigger = true;
+                    isPlaying = true;
+                    model.setAttribute('visible', true);
 
-                isTrigger = true;
-                isPlaying = true;
-                model.setAttribute('visible', true);
+                    const arSys = sceneEl ?.systems["mindar-image-system"];
+                    if (arSys) arSys.pause(true);
 
-                const arSys = sceneEl ?.systems["mindar-image-system"];
-                if (arSys) arSys.pause(true);
-
-                setTimeout(() => {
-                    if (cameraEl) cameraEl.setAttribute("look-controls", "enabled: true");
-                }, 100);
-            }
+                    setTimeout(() => {
+                        if (cameraEl) cameraEl.setAttribute("look-controls", "enabled: true");
+                    }, 100);
+                }
+            },100);
+            
         });
     }
 
