@@ -221,8 +221,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     slideElement.style.opacity = '1';
 
                     video.currentTime = 0;
-                    video.style.display = 'block';
                     video.play();
+                    setTimeout(()=>{
+                        video.style.display = 'block';
+                    },100)
                     slideElement.src = images[0];
                     const timer = setInterval(() => {
                         currentIndex++;
