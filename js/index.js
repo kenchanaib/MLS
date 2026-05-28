@@ -177,7 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
             video.play();
             // video.currentTime = 0;
             if (title) title.style.opacity = '1';
-            if (/iPad|iPhone|iPod/.test(userAgent)) {
+            if (/iPad|iPhone|iPod/.test(userAgent) && arIndex == 4) {
                 DeviceOrientationEvent.requestPermission ?.().then(response => {
                     if (response === "granted") {
                         console.log("iOS orientation granted");
