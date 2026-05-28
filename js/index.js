@@ -134,9 +134,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 } catch(e) { console.warn(e); }
             }
 
-            if (video && !video.paused) {
-                video.pause();
-            }
+            // if (video && !video.paused) {
+            //     video.pause();
+            // }
 
             if (currentStream) {
                 currentStream.getTracks().forEach(track => track.stop());
@@ -175,7 +175,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (centerContainer) centerContainer.style.display = "none";
             isStartGame = true;
             video.play();
-            video.pause();
+            setTimeout(()=>{
+                video.pause();
+            }, 50)
+
             video.currentTime = 0;
             if (title) title.style.opacity = '1';
             if (/iPad|iPhone|iPod/.test(userAgent)) {
