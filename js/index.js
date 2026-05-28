@@ -175,6 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (centerContainer) centerContainer.style.display = "none";
             isStartGame = true;
             video.play();
+            video.loop = true;
             // video.currentTime = 0;
             if (title) title.style.opacity = '1';
             if (/iPad|iPhone|iPod/.test(userAgent) && arIndex == 4) {
@@ -219,9 +220,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (title) title.style.opacity = '0';
                     if (frameHints) frameHints.style.opacity = '0';
                     slideElement.style.opacity = '1';
-
+                    video.loop = false;
                     video.currentTime = 0;
-                    video.play();
                     setTimeout(()=>{
                         video.style.display = 'block';
                     },100)
