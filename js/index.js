@@ -198,7 +198,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function triggerArSequence() {
         if (!isMarkerFound || !isStartGame || isTrigger || isPlaying) return;
 
-        if (title) title.style.opacity = '0';
+        if (title){ 
+            title.style.opacity = '0';
+            title.style.display = 'none';
+        }
+
         if (frameHints) frameHints.style.opacity = '0';
         if (slideElement) {
             slideElement.style.opacity = '1';
