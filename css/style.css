@@ -6,7 +6,7 @@ body {
 
         #game-title {
             position: fixed;
-            top: 20%;
+            top: 15%;
             left: 50%;
             transform: translateX(-50%);
             /* Center horizontally */
@@ -64,6 +64,20 @@ body {
         }
 
         #myButton {
+            width: 120px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+        }
+
+        #myButtonEN {
+            width: 120px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+        }
+
+        #myButtonSC {
             width: 120px;
             background: transparent;
             border: none;
